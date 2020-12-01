@@ -1,6 +1,6 @@
 /* Program: Basic kernel with RR scheduler for 8051 uC.
-   Auther: 	Sandeep Verma
-   Date: 		14-01-18
+   Auther:  Sandeep Verma
+   Date:    14-01-18
 */
 
 #include<reg51.h>
@@ -41,7 +41,7 @@ int main()
 	register_task(&task_0);
 	register_task(&task_1);
 	register_task(&task_2);
-  run_scheduler();
+  	run_scheduler();
 	return 0;
 }
 
