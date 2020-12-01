@@ -1,77 +1,47 @@
-/* Program: Simple OS experiment for 8051 uC.
-			(it supports only 2 tasks, main thread and sub thread)
+/* Program: Basic kernel with RR scheduler for 8051 uC.
    Auther: 	Sandeep Verma
-   Date: 	14-01-18
+   Date: 		14-01-18
 */
 
 #include<reg51.h>
 
-extern void start_task(void (*cb)(void));
-extern void change_context(void);
+extern void register_task(void (*cb)(void));
+extern void run_scheduler(void);
 
+sbit LED_0 = P1^0;
 sbit LED_1 = P1^1;
 sbit LED_2 = P1^2;
 
-typedef void (*fun)(void);
-static int overflow_count = 0;
-
-int first = 1; 
-int stack_p = 0;
-int program_c = 0;
-
-void timer0_ISR (void) interrupt 1
-{	
-	change_context();
-}
-
-void enable_timer0()
-{
-	TMOD = (TMOD & 0xF0) | 0x01;  /* Set T/C0 Mode */
-	ET0 = 1;                      /* Enable Timer 0 Interrupts */
-	TR0 = 1;                      /* Start Timer 0 Running */
-	EA = 1;                       /* Global Interrupt Enable */
-	
-	TH0 = 0xFC;		/* Load higher 8-bit in TH0 */
-	TL0 = 0x74;		/* Load lower 8-bit in TL0 */
-}
-
-void delay(unsigned int d)
-{ 
-  unsigned char i;
-  for(;d>0;d--)
-  {
-   for(i=250;i>0; i--);
-   for(i=254;i>0; i--);
-  }
-}
-
-void thread_1()
+void task_0(void)
 {
 	while(1) {
-	LED_1 = ~LED_1;
-	//delay(50);
-	//LED_1 = ~LED_1;
-	delay(50);
+		/* Task to be executed in loop. Currently blinking LED_0 */
+		LED_0 = ~LED_0;
 	}
 }
 
-void thread_2(void)
+void task_1(void)
 {
 	while(1) {
-	LED_2 = ~LED_2;
-//	delay(50);
-//	LED_2 = ~LED_2;
-	delay(50);
+		/* Task to be executed in loop. Currently blinking LED_1 */
+		LED_1 = ~LED_1;
 	}
 }
 
-main()
+void task_2(void)
 {
-	fun fun1;
-	fun1 = thread_2;
-	start_task(thread_1);
-	enable_timer0();
-	(*fun1)();
-  while(1);
+	while(1) {
+		/* Task to be executed in loop. Currently blinking LED_2 */
+		LED_2 = ~LED_2;
+	}
+}
+
+int main()
+{
+	register_task(&task_0);
+	register_task(&task_1);
+	register_task(&task_2);
+  run_scheduler();
+	return 0;
 }
 
